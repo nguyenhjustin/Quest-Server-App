@@ -17,7 +17,7 @@ after(function() {
 describe('quest server backend tests', function () {
 
   it('update progress', function(done) {
-    var options = GetOptionsForUpdateProgress("id1", 2, 100);
+    var options = GetOptionsForUpdateProgress("id1", 2, 10);
     request.post(options, function(err, res, body) {
       expect(res.statusCode).to.equal(200);
       console.log(body);

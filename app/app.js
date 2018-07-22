@@ -53,7 +53,8 @@ function UpdateProgress(req, res)
   console.log("Received POST for Player: " + playerId + ", Level: " + 
     playerLevel + ", Bet Amount: " + chipAmountBet + "!\n");
 
-  var questPointsEarned = 2;
+  var questPointsEarned = (chipAmountBet * RateFromBet) + 
+    (playerLevel * LevelBonusRate);
   var totalQuestPercentCompleted = 20;
   var milestonesCompleted = [];
 
