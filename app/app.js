@@ -3,8 +3,13 @@ const app = express();
 app.use(express.json());
 
 // Read the quest configuration file.
-// TODO: Validate configuration file.
+var RateFromBet;
+var LevelBonusRate;
+var QuestCompletionPoints;
+var MilestonesPerQuest;
+var MilestoneChipsAward;
 const questConfig = require('./questConfig.json');
+ValidateQuestConfig();
 
 // Connect to the database.
 const redis = require('redis');
@@ -54,10 +59,9 @@ function UpdateProgress(req, res)
 
   // TODO: Check if multiple milestones are completed and add them to the array.
   var milestoneIndex = 3;
-  var chipsAwarded = questConfig.MilestoneChipsAward;
   milestonesCompleted.push({
     "MilestoneIndex": milestoneIndex, 
-    "ChipsAwarded": chipsAwarded 
+    "ChipsAwarded": MilestoneChipsAward 
   });
   
   res.status(200).send({
@@ -79,4 +83,33 @@ function GetState(req, res)
     "TotalQuestPercentCompleted": totalQuestPercentCompleted,
     "LastMilestoneIndexCompleted": lastMilestoneIndexCompleted
   }); 
+}
+
+/**
+ * Checks that the quest config file contains valid values.
+ */
+function ValidateQuestConfig()
+{
+  RateFromBet = questConfig.RateFromBet;
+  LevelBonusRate = questConfig.LevelBonusRate;
+  QuestCompletionPoints = questConfig.QuestCompletionPoints;
+  MilestonesPerQuest = questConfig.MilestonesPerQuest;
+  MilestoneChipsAward = questConfig.MilestoneChipsAward;
+
+  if (isNaN(RateFromBet) || isNaN(LevelBonusRate))
+  {
+    console.log("RateFromBet and LevelBonusRate must be numbers.\n");
+    process.exit(1);
+  }
+
+  if (!Number.isInteger(QuestCompletionPoints) ||
+    !Number.isInteger(MilestonesPerQuest) ||
+    !Number.isInteger(MilestoneChipsAward)) 
+  {
+    console.log("QuestCompletionPoints, MilestonesPerQuest, and " +
+      "MilestoneChipsAward must be integers.\n");
+    process.exit(1);
+  }
+
+  // TODO: Instead of exiting, default values could be used instead.
 }
