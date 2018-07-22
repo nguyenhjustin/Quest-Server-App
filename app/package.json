@@ -1,0 +1,14 @@
+{
+  "name": "quest-server",
+  "version": "1.0.0",
+  "description": "A backend API for a quest server.",
+  "main": "app.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha --exit"
+  },
+  "author": "Justin Nguyen",
+  "license": "ISC"
+}
