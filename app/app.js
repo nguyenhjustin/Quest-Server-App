@@ -35,8 +35,8 @@ app.get('/api/state/:PlayerId', GetState);
 
 // Start the server.
 var server = module.exports = app.listen(3000, function() {
-  var host = server.address().address;
-  var port = server.address().port;
+  let host = server.address().address;
+  let port = server.address().port;
   console.log("App listening at http://%s:%s", host, port);
 });
 
@@ -47,43 +47,91 @@ server.on('close', function(err) {
 function UpdateProgress(req, res)
 {
   // TODO: Validate the body.
-  var playerId = req.body.PlayerId;
-  var playerLevel = req.body.PlayerLevel;
-  var chipAmountBet = req.body.ChipAmountBet;
+  let playerId = req.body.PlayerId;
+  let playerLevel = req.body.PlayerLevel;
+  let chipAmountBet = req.body.ChipAmountBet;
   console.log("Received POST for Player: " + playerId + ", Level: " + 
     playerLevel + ", Bet Amount: " + chipAmountBet + "!\n");
 
-  var questPointsEarned = (chipAmountBet * RateFromBet) + 
+  let questPointsEarned = (chipAmountBet * RateFromBet) + 
     (playerLevel * LevelBonusRate);
-  var totalQuestPercentCompleted = 20;
-  var milestonesCompleted = [];
-
-  // TODO: Check if multiple milestones are completed and add them to the array.
-  var milestoneIndex = 3;
-  milestonesCompleted.push({
-    "MilestoneIndex": milestoneIndex, 
-    "ChipsAwarded": MilestoneChipsAward 
-  });
   
-  res.status(200).send({
-    "QuestPointsEarned": questPointsEarned,
-    "TotalQuestPercentCompleted": totalQuestPercentCompleted,
-    "MilestonesCompleted": milestonesCompleted
-  }); 
+  let totalQuestPoints = 0;
+  let lastMilestoneIndex = 0;
+
+  let totalQuestPercentCompleted;
+  let milestonesCompleted = [];
+
+  RetrieveDatabase(playerId)
+
+  .then((object) => {
+    if (object != null) {
+      totalQuestPoints = object[TotalQuestPointsField];
+      lastMilestoneIndex = object[LastMilestoneIndexField];
+    }
+    
+    // TODO: Check if multiple milestones are completed and add them to the array.
+    let pointsPerMilestone = QuestCompletionPoints / MilestonesPerQuest;
+    let pointsCounter = totalQuestPoints + pointsPerMilestone;
+
+    // Every time this while loop executes, a milestone is completed.
+    while (pointsCounter < totalQuestPoints + questPointsEarned)
+    {
+
+      pointsCounter += pointsPerMilestone;
+    }
+
+    let milestoneIndex = 3;
+    milestonesCompleted.push({
+      "MilestoneIndex": milestoneIndex, 
+      "ChipsAwarded": MilestoneChipsAward 
+    });
+    
+    totalQuestPoints += questPointsEarned;
+    totalQuestPercentCompleted = 
+      (totalQuestPoints / QuestCompletionPoints) * 100;
+
+    UpdateDatabase(playerId, totalQuestPoints, lastMilestoneIndex);
+  })
+
+  .then(() => {
+    res.status(200).send({
+      "QuestPointsEarned": questPointsEarned,
+      "TotalQuestPercentCompleted": totalQuestPercentCompleted,
+      "MilestonesCompleted": milestonesCompleted
+    }); 
+  })
+
+  .catch(error => HandleError(res, 500, error));
+
 }
 
 function GetState(req, res)
 {
-  var playerId = req.params.PlayerId;
+  let playerId = req.params.PlayerId;
   console.log("Received GET with PlayerId: " + playerId + "!\n");
 
-  var totalQuestPercentCompleted = 70;
-  var lastMilestoneIndexCompleted = 4;
+  RetrieveDatabase(playerId)
 
-  res.status(200).send({
-    "TotalQuestPercentCompleted": totalQuestPercentCompleted,
-    "LastMilestoneIndexCompleted": lastMilestoneIndexCompleted
-  }); 
+  .then((object) => {
+    if (object == null) {
+      return Promise.reject("PlayerId: " + playerId + " does not exist.");
+    }
+
+    let totalQuestPoints = object[TotalQuestPointsField];
+    let lastMilestoneIndex = object[LastMilestoneIndexField];
+
+    let totalQuestPercentCompleted = 
+      (totalQuestPoints / QuestCompletionPoints) * 100;
+  
+    res.status(200).send({
+      "TotalQuestPercentCompleted": totalQuestPercentCompleted,
+      "LastMilestoneIndexCompleted": lastMilestoneIndex
+    }); 
+  })
+
+  .catch(error => HandleError(res, 500, error));
+
 }
 
 /**
@@ -91,6 +139,7 @@ function GetState(req, res)
  */
 function ValidateQuestConfig()
 {
+    // TODO: Check for negative numbers.
   RateFromBet = questConfig.RateFromBet;
   LevelBonusRate = questConfig.LevelBonusRate;
   QuestCompletionPoints = questConfig.QuestCompletionPoints;
@@ -113,4 +162,44 @@ function ValidateQuestConfig()
   }
 
   // TODO: Instead of exiting, default values could be used instead.
+}
+
+function UpdateDatabase(playerId, totalQuestPoints, lastMilestoneIndex) {
+  return new Promise((resolve, reject) => {
+    client.HMSET(
+      PlayerIdHashPrefix + playerId, 
+      TotalQuestPointsField, totalQuestPoints, 
+      LastMilestoneIndexField, lastMilestoneIndex, (err, status) => {
+        if (err) {
+          reject(err);
+        }
+        else {
+          resolve(status);
+        }
+    });
+  });
+}
+
+function RetrieveDatabase(playerId) {
+  return new Promise((resolve, reject) => {
+    client.HGETALL(PlayerIdHashPrefix + playerId, (err, status) => {
+      if (err) {
+        reject(err);
+      }
+      else {
+        resolve(status);
+      }
+    });
+  });
+}
+
+/**
+ * Responds an error back to the client.
+ * @param {Response} res 
+ * @param {integer} statusCode 
+ * @param {string} error 
+ */
+function HandleError(res, statusCode, error) {
+  console.log("Error: " + error);
+  res.status(statusCode).send( { "error": error } );
 }
