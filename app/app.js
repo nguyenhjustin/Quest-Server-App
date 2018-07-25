@@ -14,15 +14,15 @@ ValidateQuestConfig();
 // Connect to the database.
 const redis = require('redis');
 //const client = redis.createClient(6379, 'redis');
-//const client = redis.createClient(6379, "192.168.99.100");
+const client = redis.createClient(6379, "192.168.99.100");
 
-// client.on('connect', function() {
-//   console.log('Redis is now connected!\n');
-//  });
+client.on('connect', function() {
+  console.log('Redis is now connected!\n');
+ });
 
-// client.on('error', function(err) {
-//   console.log("Redis Error: " + err);
-// });
+client.on('error', function(err) {
+  console.log("Redis Error: " + err);
+});
 
 // // Uncomment this function to clear the database.
 // client.flushdb( function(err, succeeded) {
