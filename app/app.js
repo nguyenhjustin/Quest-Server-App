@@ -24,10 +24,16 @@ client.on('error', function(err) {
   console.log("Redis Error: " + err);
 });
 
-// // Uncomment this function to clear the database.
-// client.flushdb( function(err, succeeded) {
-//  console.log(succeeded);
-// });
+var ClearDatabase = function() {
+  client.flushdb( function(err, succeeded) {
+    if (err) {
+      console.log("Clear database failed: " + err + ".\n");
+    }
+    else {
+      console.log("Clear database success!\n");
+    }
+  });
+}
 
 // Constants for the database.
 const PlayerIdHashPrefix = "PlayerId:";
@@ -48,6 +54,8 @@ var server = module.exports = app.listen(3000, function() {
 server.on('close', function(err) {
   console.log("Server closed!");
 });
+
+server.ClearDatabase = ClearDatabase;
 
 function UpdateProgress(req, res)
 {

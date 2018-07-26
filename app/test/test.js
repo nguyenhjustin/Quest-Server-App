@@ -8,6 +8,7 @@ var server;
 
 before(function() {
   server = require('../app.js');
+  server.ClearDatabase();
 });
 
 after(function() {
