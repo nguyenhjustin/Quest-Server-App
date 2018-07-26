@@ -69,27 +69,23 @@ function UpdateProgress(req, res)
       totalQuestPoints = object[TotalQuestPointsField];
       lastMilestoneIndex = object[LastMilestoneIndexField];
     }
-    
-    // TODO: Check if multiple milestones are completed and add them to the array.
-    let pointsPerMilestone = QuestCompletionPoints / MilestonesPerQuest;
-    let pointsCounter = totalQuestPoints + pointsPerMilestone;
 
-    // Every time this while loop executes, a milestone is completed.
-    while (pointsCounter < totalQuestPoints + questPointsEarned)
-    {
-
-      pointsCounter += pointsPerMilestone;
-    }
-
-    let milestoneIndex = 3;
-    milestonesCompleted.push({
-      "MilestoneIndex": milestoneIndex, 
-      "ChipsAwarded": MilestoneChipsAward 
-    });
-    
     totalQuestPoints += questPointsEarned;
     totalQuestPercentCompleted = 
       (totalQuestPoints / QuestCompletionPoints) * 100;
+    
+    // TODO: Check if multiple milestones are completed and add them to the array.
+    let pointsPerMilestone = QuestCompletionPoints / MilestonesPerQuest;
+
+    for (let i = lastMilestoneIndex + 1; i <= MilestonesPerQuest; i++) {
+      if (totalQuestPoints >= i * pointsPerMilestone) {
+        milestonesCompleted.push({
+          "MilestoneIndex": i, 
+          "ChipsAwarded": MilestoneChipsAward 
+        });
+        lastMilestoneIndex = i;
+      }
+    }
 
     UpdateDatabase(playerId, totalQuestPoints, lastMilestoneIndex);
   })
@@ -119,7 +115,7 @@ function GetState(req, res)
     }
 
     let totalQuestPoints = object[TotalQuestPointsField];
-    let lastMilestoneIndex = object[LastMilestoneIndexField];
+    let lastMilestoneIndex = parseInt(object[LastMilestoneIndexField]);
 
     let totalQuestPercentCompleted = 
       (totalQuestPoints / QuestCompletionPoints) * 100;
