@@ -79,7 +79,6 @@ function UpdateProgress(req, res)
     totalQuestPercentCompleted = 
       (totalQuestPoints / QuestCompletionPoints) * 100;
     
-    // TODO: Check if multiple milestones are completed and add them to the array.
     let pointsPerMilestone = QuestCompletionPoints / MilestonesPerQuest;
 
     for (let i = lastMilestoneIndex + 1; i <= MilestonesPerQuest; i++) {
