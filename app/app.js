@@ -29,6 +29,11 @@ client.on('error', function(err) {
 //  console.log(succeeded);
 // });
 
+// Constants for the database.
+const PlayerIdHashPrefix = "PlayerId:";
+const TotalQuestPointsField = "TotalQuestPoints";
+const LastMilestoneIndexField = "LastMilestoneIndex";
+
 // Setup routes.
 app.post('/api/progress', UpdateProgress);
 app.get('/api/state/:PlayerId', GetState);
