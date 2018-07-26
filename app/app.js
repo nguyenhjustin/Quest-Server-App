@@ -79,8 +79,8 @@ function UpdateProgress(req, res)
 
   .then((object) => {
     if (object != null) {
-      totalQuestPoints = object[TotalQuestPointsField];
-      lastMilestoneIndex = object[LastMilestoneIndexField];
+      totalQuestPoints = parseFloat(object[TotalQuestPointsField]);
+      lastMilestoneIndex = parseInt(object[LastMilestoneIndexField]);
     }
 
     totalQuestPoints += questPointsEarned;
@@ -126,7 +126,7 @@ function GetState(req, res)
       return Promise.reject("PlayerId: " + playerId + " does not exist.");
     }
 
-    let totalQuestPoints = object[TotalQuestPointsField];
+    let totalQuestPoints = parseFloat(object[TotalQuestPointsField]);
     let lastMilestoneIndex = parseInt(object[LastMilestoneIndexField]);
 
     let totalQuestPercentCompleted = 
