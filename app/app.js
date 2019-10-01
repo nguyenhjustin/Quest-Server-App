@@ -147,7 +147,7 @@ function GetState(req, res)
  */
 function ValidateQuestConfig()
 {
-    // TODO: Check for negative numbers.
+  // TODO: Check for negative numbers.
   RateFromBet = questConfig.RateFromBet;
   LevelBonusRate = questConfig.LevelBonusRate;
   QuestCompletionPoints = questConfig.QuestCompletionPoints;
