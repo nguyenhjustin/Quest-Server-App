@@ -12,7 +12,7 @@
   "author": "Justin Nguyen",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.16.3",
+    "express": "^4.17.3",
     "redis": "^2.8.0",
     "request": "^2.87.0"
   },
